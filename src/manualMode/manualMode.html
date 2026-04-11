@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Manual Mode - Keyboard Drums</title>
+  <link href="../../main.css" rel="stylesheet"/>
+</head>
+
+<body class="m-0 overflow-hidden bg-gray-50">
+  <div class="flex max-w-full gap-8 my-10 mx-10" style="height: calc(100vh - 5rem);">
+    <div class="w-3/4 flex flex-col">
+      <article class="w-full h-full text-center p-4 rounded-lg shadow-md border-gray-200 border bg-white flex flex-col">
+        <h2 class="mb-2">Manual Mode - Play Drums with Keyboard</h2>
+
+        <div class="mb-4 p-3 bg-blue-50 rounded-lg">
+          <h3 class="text-lg font-semibold mb-2">Keyboard Controls</h3>
+          <div class="flex justify-center gap-8 text-sm">
+            <div class="flex flex-col items-center">
+              <kbd class="px-3 py-2 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">A</kbd>
+              <span class="mt-1">Hi-Hat</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <kbd class="px-3 py-2 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">S</kbd>
+              <span class="mt-1">Cymbal</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <kbd class="px-3 py-2 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">D</kbd>
+              <span class="mt-1">Snare</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <kbd class="px-3 py-2 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">F</kbd>
+              <span class="mt-1">Kick</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 flex-1 min-h-0">
+          <!-- HiHat -->
+          <div id="drum-hihat" class="drum-pad border-4 border-yellow-400 rounded-xl bg-yellow-50 transition-all duration-100 flex flex-col items-center justify-center cursor-pointer hover:shadow-lg">
+            <img src="/Images/hihat.svg" alt="Hi-Hat" class="h-1/3 mb-2">
+            <span class="text-lg font-semibold">Hi-Hat</span>
+            <kbd class="mt-2 px-3 py-1 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">A</kbd>
+          </div>
+
+          <!-- Cymbal -->
+          <div id="drum-cymbal" class="drum-pad border-4 border-green-400 rounded-xl bg-green-50 transition-all duration-100 flex flex-col items-center justify-center cursor-pointer hover:shadow-lg">
+            <img src="/Images/cymbals.svg" alt="Cymbal" class="h-1/3 mb-2">
+            <span class="text-lg font-semibold">Cymbal</span>
+            <kbd class="mt-2 px-3 py-1 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">S</kbd>
+          </div>
+
+          <!-- Snare -->
+          <div id="drum-snare" class="drum-pad border-4 border-blue-400 rounded-xl bg-blue-50 transition-all duration-100 flex flex-col items-center justify-center cursor-pointer hover:shadow-lg">
+            <img src="/Images/snare.svg" alt="Snare" class="h-1/3 mb-2">
+            <span class="text-lg font-semibold">Snare</span>
+            <kbd class="mt-2 px-3 py-1 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">D</kbd>
+          </div>
+
+          <!-- Kick -->
+          <div id="drum-kick" class="drum-pad border-4 border-purple-400 rounded-xl bg-purple-50 transition-all duration-100 flex flex-col items-center justify-center cursor-pointer hover:shadow-lg">
+            <img src="/Images/kick.svg" alt="Kick" class="h-1/3 mb-2">
+            <span class="text-lg font-semibold">Kick</span>
+            <kbd class="mt-2 px-3 py-1 bg-white border border-gray-300 rounded shadow-sm font-mono font-bold">F</kbd>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="w-1/4 flex flex-col p-5 rounded-lg shadow-md border-gray-200 border justify-between overflow-y-auto bg-white" style="max-height: calc(100vh - 5rem);">
+      <div class="flex flex-col gap-4">
+        <h2>Control Panel</h2>
+
+        <!-- Tempo Detection Display -->
+        <div class="flex flex-col gap-2">
+          <h3>Your Playing Tempo</h3>
+          <div id="tempoDisplay" class="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center">
+            <div id="tempoStatus" class="text-sm text-gray-600 mb-2">Keep playing...</div>
+            <!-- BPM number with SVG confidence ring around it -->
+            <div class="relative inline-block">
+              <svg width="100" height="100" class="block mx-auto">
+                <!-- Background circle (gray track) -->
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" stroke-width="4"></circle>
+                <!-- Progress circle (fills up as hits are recorded) -->
+                <circle id="tempoRing" cx="50" cy="50" r="42" fill="none" stroke="#3b82f6"
+                  stroke-width="4" stroke-linecap="round"
+                  stroke-dasharray="263.9" stroke-dashoffset="263.9"
+                  transform="rotate(-90 50 50)"
+                  style="transition: stroke-dashoffset 0.3s, stroke 0.3s;"></circle>
+              </svg>
+              <!-- BPM number positioned in the centre of the ring -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div id="tempoBPM" class="text-3xl font-bold text-gray-400">--</div>
+              </div>
+            </div>
+            <div class="text-xs text-gray-500 mt-2">BPM</div>
+            <div id="loopBPMReference" class="text-xs text-gray-600 mt-3">
+              Loop BPM: <span id="loopBPMValue">90</span>
+            </div>
+          </div>
+          <button class="btn-cancel text-sm" id="resetTempoButton">Reset Tempo</button>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <h3>Drum Kits</h3>
+
+          <div class="flex flex-col gap-1">
+            <label for="userKitSelect" class="text-sm font-medium">Your Drum Sound:</label>
+            <select id="userKitSelect" class="input">
+              <option value="kit1">Original</option>
+              <option value="kit2">808 Classic</option>
+              <option value="kit3">Acoustic Rock</option>
+              <option value="kit4">Electro Modern</option>
+              <option value="kit5">Lo-Fi Vintage</option>
+              <option value="kit6">Heavy Punch</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="loopKitSelect" class="text-sm font-medium">Loop Drum Sound:</label>
+            <select id="loopKitSelect" class="input">
+              <option value="kit1">Original</option>
+              <option value="kit2" selected>808 Classic</option>
+              <option value="kit3">Acoustic Rock</option>
+              <option value="kit4">Electro Modern</option>
+              <option value="kit5">Lo-Fi Vintage</option>
+              <option value="kit6">Heavy Punch</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <h3>Drum Loop</h3>
+
+          <div class="flex gap-2">
+            <button class="btn-primary" id="loopStartButton">Start Loop</button>
+            <button class="btn-cancel hidden" id="loopStopButton">Stop Loop</button>
+          </div>
+
+          <div class="flex items-center justify-between p-2 bg-gray-100 rounded">
+            <span class="text-sm font-medium">Beat:</span>
+            <span id="beatIndicator" class="text-lg font-bold text-blue-600"></span>
+          </div>
+
+          <!-- Beat visualisation dots  -->
+          <div id="beatDots" class="flex items-center justify-center gap-2 p-2 bg-gray-100 rounded flex-wrap"></div>
+
+          <div class="flex flex-col gap-1">
+            <label for="loopModeSelect" class="text-sm font-medium">Loop Mode:</label>
+            <select id="loopModeSelect" class="input">
+              <option value="pattern">Pattern Mode</option>
+              <option value="vocoder">Time Stretch Mode</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="patternSelect" class="text-sm font-medium">Pattern:</label>
+            <select id="patternSelect" class="input">
+              <option value="0">Simple Rock</option>
+              <option value="1">Rock Beat</option>
+              <option value="2">Funk Groove</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bpmSlider" class="text-sm font-medium">
+              BPM: <span id="bpmValue">90</span>
+            </label>
+            <input type="range" min="40" max="200" value="90" id="bpmSlider"
+                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+          </div>
+
+          <!-- Sync Mode Control -->
+          <div class="flex flex-col gap-2 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+            <button class="btn-primary text-sm" id="syncToggle">Sync to My Playing</button>
+            <div class="text-center">
+              <div id="syncStatus" class="text-xs font-medium text-gray-400">Sync disabled</div>
+            </div>
+            <!-- Sync progress bar -->
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div id="syncProgressBar" class="h-2 rounded-full transition-all duration-300" style="width: 0%; background-color: #ef4444;"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1 mb-6">
+            <label for="loopVolumeSlider" class="text-sm font-medium">
+              Loop Volume: <span id="loopVolumeValue">70%</span>
+            </label>
+            <input type="range" min="0" max="100" value="70" id="loopVolumeSlider"
+                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-cancel" id="exitButton">Back to the menu</button>
+    </div>
+  </div>
+
+  <script defer src="manualMode.js" type="module"></script>
+</body>
+
+</html>

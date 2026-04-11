@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Timbre Space</title>
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet"/>
+  <link href="../../main.css" rel="stylesheet"/>
+  <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.css"
+        rel="stylesheet"
+        type="text/css">
+  <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script crossorigin="anonymous"
+          src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+  <script crossorigin="anonymous"
+          src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js"></script>
+</head>
+
+<body class="m-0 overflow-hidden">
+  <div class="flex max-w-full gap-8 my-10 mx-10">
+    <div class="w-3/4 flex flex-col items-center">
+      <article class="w-full h-full text-center p-4 rounded-lg shadow-md border-gray-200 border">
+        <h2>Holistic Detection</h2>
+        <div class="mt-4">
+          <canvas class="w-full h-auto rounded-lg" height="720" id="canvas" width="1280"></canvas>
+        </div>
+      </article>
+    </div>
+
+    <div class="w-1/4 flex flex-col p-5 rounded-lg shadow-md border-gray-200 border justify-between overflow-y-auto bg-white" style="max-height: calc(100vh - 5rem);">
+      <div class="flex flex-col gap-4">
+
+        <h2>Control Panel</h2>
+
+        <button class="btn-primary" id="startButton">Start Playing</button>
+        <button class="btn-cancel" id="cancelButton" hidden>Stop</button>
+
+        <!-- Tempo Detection Display -->
+        <div class="flex flex-col gap-2">
+          <h3>Your Playing Tempo</h3>
+          <div id="tempoDisplay" class="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center">
+            <div id="tempoStatus" class="text-sm text-gray-600 mb-2">Keep playing...</div>
+            <!-- BPM number with SVG confidence ring around it -->
+            <div class="relative inline-block">
+              <svg width="100" height="100" class="block mx-auto">
+                <!-- Background circle (gray track) -->
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" stroke-width="4"></circle>
+                <!-- Progress circle (fills up as hits are recorded) -->
+                <circle id="tempoRing" cx="50" cy="50" r="42" fill="none" stroke="#3b82f6"
+                  stroke-width="4" stroke-linecap="round"
+                  stroke-dasharray="263.9" stroke-dashoffset="263.9"
+                  transform="rotate(-90 50 50)"
+                  style="transition: stroke-dashoffset 0.3s, stroke 0.3s;"></circle>
+              </svg>
+              <!-- BPM number positioned in the centre of the ring -->
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div id="tempoBPM" class="text-3xl font-bold text-gray-400">--</div>
+              </div>
+            </div>
+            <div class="text-xs text-gray-500 mt-2">BPM</div>
+            <div id="loopBPMReference" class="text-xs text-gray-600 mt-3">
+              Loop BPM: <span id="loopBPMValue">90</span>
+            </div>
+          </div>
+          <button class="btn-cancel text-sm" id="resetTempoButton">Reset Tempo</button>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <h3>Configuration</h3>
+          <div class="flex gap-2">
+            <button class="btn-primary" id="loadButton">Modify</button>
+            <button class="btn-primary" id="saveButton">Save</button>
+          </div>
+          <div class="hidden bg-gray-100 p-4 rounded-lg" id="statusMessage"></div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <h3>Drum Kits</h3>
+
+          <div class="flex flex-col gap-1">
+            <label for="userKitSelect" class="text-sm font-medium">Your Drum Sound:</label>
+            <select id="userKitSelect" class="input">
+              <option value="kit1">Original</option>
+              <option value="kit2">808 Classic</option>
+              <option value="kit3">Acoustic Rock</option>
+              <option value="kit4">Electro Modern</option>
+              <option value="kit5">Lo-Fi Vintage</option>
+              <option value="kit6">Heavy Punch</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="loopKitSelect" class="text-sm font-medium">Loop Drum Sound:</label>
+            <select id="loopKitSelect" class="input">
+              <option value="kit1">Original</option>
+              <option value="kit2" selected>808 Classic</option>
+              <option value="kit3">Acoustic Rock</option>
+              <option value="kit4">Electro Modern</option>
+              <option value="kit5">LoFi Vintage</option>
+              <option value="kit6">Heavy Punch</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <h3>Drum Loop</h3>
+
+          <div class="flex gap-2">
+            <button class="btn-primary" id="loopStartButton">Start Loop</button>
+            <button class="btn-cancel hidden" id="loopStopButton">Stop Loop</button>
+          </div>
+
+          <div class="flex items-center justify-between p-2 bg-gray-100 rounded">
+            <span class="text-sm font-medium">Beat:</span>
+            <span id="beatIndicator" class="text-lg font-bold text-blue-600"></span>
+          </div>
+
+          <!-- Beat visualisation dots -->
+          <div id="beatDots" class="flex items-center justify-center gap-2 p-2 bg-gray-100 rounded flex-wrap"></div>
+
+          <div class="flex flex-col gap-1">
+            <label for="loopModeSelect" class="text-sm font-medium">Loop Mode:</label>
+            <select id="loopModeSelect" class="input">
+              <option value="pattern">Pattern Mode</option>
+              <option value="vocoder">Time Stretch Mode</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="patternSelect" class="text-sm font-medium">Pattern:</label>
+            <select id="patternSelect" class="input">
+              <option value="0">Simple Rock</option>
+              <option value="1">Rock Beat</option>
+              <option value="2">Funk Groove</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label for="bpmSlider" class="text-sm font-medium">
+              BPM: <span id="bpmValue">90</span>
+            </label>
+            <input type="range" min="40" max="200" value="90" id="bpmSlider"
+                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+          </div>
+
+          <!-- Sync Mode Control -->
+          <div class="flex flex-col gap-2 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+            <button class="btn-primary text-sm" id="syncToggle">Sync to My Playing</button>
+            <div class="text-center">
+              <div id="syncStatus" class="text-xs font-medium text-gray-400">Sync disabled</div>
+            </div>
+            <!-- Sync progress bar — fills up as BPM converges -->
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div id="syncProgressBar" class="h-2 rounded-full transition-all duration-300" style="width: 0%; background-color: #ef4444;"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1 mb-6">
+            <label for="loopVolumeSlider" class="text-sm font-medium">
+              Loop Volume: <span id="loopVolumeValue">70%</span>
+            </label>
+            <input type="range" min="0" max="100" value="70" id="loopVolumeSlider"
+                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <h3>WebRTC connection</h3>
+          <div class="flex flex-col gap-2">
+            <button class="btn-primary w-full" id="callButton">Create a new offer</button>
+
+            <div class="flex flex-row gap-2">
+              <input data-tooltip-target="tooltip-default" class="input w-auto" id="callInput"
+                     placeholder="Enter call ID"/>
+              <button class="btn-primary" id="answerButton">Answer</button>
+            </div>
+
+            <!--            <button class="btn-cancel w-auto hidden" id="hangupButton">Hangup</button>-->
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-cancel" id="exitButton">Back to the menu</button>
+    </div>
+  </div>
+
+  <div id="tooltip-default" role="tooltip"
+       class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+    Pass the generated key into the field below, to answer a call
+    <div class="tooltip-arrow" data-popper-arrow></div>
+  </div>
+  <audio autoplay id="audio"></audio>
+  <script defer src="Mediapipe.js" type="module"></script>
+  <script defer src="WebRTCConnexion.js" type="module"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+</body>
+
+</html>
