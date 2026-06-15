@@ -4,17 +4,17 @@ const pitchShiftButton = document.querySelector("#pitchShiftButton");
 const manualModeButton = document.querySelector("#manualModeButton");
 
 mediapipeButton.addEventListener("click", () => {
-  location.href = "/src/mediapipe/Mediapipe.html";
+  location.href = "src/mediapipe/Mediapipe.html";
 });
 
 webRTCButton.addEventListener("click", () => {
-  location.href = "/src/webRTC/webRTC.html";
+  location.href = "src/webRTC/webRTC.html";
 });
 
 pitchShiftButton.addEventListener("click", () => {
-  location.href = "/src/pitchShift/pitchShift.html";
+  location.href = "src/pitchShift/pitchShift.html";
 });
 
 manualModeButton.addEventListener("click", () => {
-  location.href = "/src/manualMode/manualMode.html";
+  location.href = "src/manualMode/manualMode.html";
 });
